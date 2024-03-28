@@ -1,35 +1,32 @@
 const request = require('request');
 
-// Get breed name from command-line argument
-const breedName = process.argv[2];
+const fetchBreedDescription = function(breedName, callback) {
+  // URL from where we are gathering cat information
+  const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedName}`;
 
-// if breed not found display 'please provide a breed name'
-if (!breedName || breedName.length === 0) {
-  console.error('Please provide a valid breed name.');
-  return;
-}
-
-
-//url from where we are gathering cat information
-const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedName}`;
-
-//make a request to the api
-request.get(url, (error, response, body) => {
-  if (error) {
-    console.error("Error", error);
-    return;
-  }
-  //change from string to object
-  const data = JSON.parse(body);
-
-    // Check if the data array is empty
-    if (data.length === 0) {
-      console.error(`No breed found with the name '${breedName}'.`);
+  // Make a request to the API
+  request.get(url, (error, response, body) => {
+    if (error) {
+      callback(error, null);
       return;
     }
 
- //access first entry in the data array
-  const breedInfo = data[0];
-  //display breed information
-  console.log(`${breedInfo.name} is generally ${breedInfo.temperament}.`);
-});
+    // Change from string to object
+    const data = JSON.parse(body);
+
+    // Check if the data array is empty
+    if (data.length === 0) {
+      callback(`No breed found with the name '${breedName}'.`, null);
+      return;
+    }
+
+    // Access first entry in the data array
+    const breedInfo = data[0];
+    // Construct description
+    const description = `${breedInfo.name} is generally ${breedInfo.temperament}.`;
+    // Call the callback with null error and description
+    callback(null, description);
+  });
+};
+
+module.exports = { fetchBreedDescription };
